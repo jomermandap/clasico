@@ -25,7 +25,7 @@ export function AuthLanding({
             Weekend Market
           </p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Clasico Tracking System
+            Clásico Tracking System
           </h1>
           <p className="max-w-prose text-sm text-muted-foreground sm:text-base">
             Track merchant rent (paid/pending), spot reservations, and weekly expenses for your Thu–Sun
