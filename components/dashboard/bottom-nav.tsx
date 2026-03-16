@@ -29,8 +29,10 @@ export function BottomNav() {
     >
       <div className="flex">
         {TABS.map((tab) => {
-          const isActive =
-            pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+          const isOverview = tab.href === "/protected";
+          const isActive = isOverview
+            ? pathname === tab.href
+            : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           const Icon = tab.icon;
 
           return (

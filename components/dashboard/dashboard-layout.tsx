@@ -99,9 +99,11 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
               </p>
               <nav className="space-y-1">
                 {MAIN_NAV.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    pathname.startsWith(`${item.href}/`);
+                  const isOverview = item.href === "/protected";
+                  const isActive = isOverview
+                    ? pathname === item.href
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
                   const Icon = item.icon;
                   return (
                     <Link
