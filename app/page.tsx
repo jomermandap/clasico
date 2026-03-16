@@ -1,4 +1,4 @@
-import { AuthLanding } from "@/components/auth-landing";
+import { AuthLanding } from "@/components/auth/auth-landing";
 
 export default function Home() {
   return <AuthLanding initialMode="login" />;
