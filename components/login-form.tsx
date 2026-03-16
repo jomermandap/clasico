@@ -18,8 +18,13 @@ import { useState } from "react";
 
 export function LoginForm({
   className,
+  showSwitchLinks = true,
+  onSwitchMode,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: React.ComponentPropsWithoutRef<"div"> & {
+  showSwitchLinks?: boolean;
+  onSwitchMode?: () => void;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -93,15 +98,26 @@ export function LoginForm({
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/auth/sign-up"
-                className="underline underline-offset-4"
-              >
-                Sign up
-              </Link>
-            </div>
+            {showSwitchLinks && (
+              <div className="mt-4 text-center text-sm">
+                Don&apos;t have an account?{" "}
+                <Link href="/auth/sign-up" className="underline underline-offset-4">
+                  Sign up
+                </Link>
+              </div>
+            )}
+            {!showSwitchLinks && onSwitchMode && (
+              <div className="mt-4 text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <button
+                  type="button"
+                  className="font-medium underline underline-offset-4 text-foreground"
+                  onClick={onSwitchMode}
+                >
+                  Create one
+                </button>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

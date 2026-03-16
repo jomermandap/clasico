@@ -1,11 +1,5 @@
-import { SignUpForm } from "@/components/sign-up-form";
+import { AuthLanding } from "@/components/auth-landing";
 
 export default function Page() {
-  return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <SignUpForm />
-      </div>
-    </div>
-  );
+  return <AuthLanding initialMode="sign-up" />;
 }
