@@ -3,7 +3,7 @@ import { DashboardStats, RecentActivity, ProjectsTable } from "@/components/dash
 
 export default function ProtectedPage() {
   return (
-    <DashboardLayout title="Dashboard">
+    <DashboardLayout title="Weekend Market Overview">
       <div className="space-y-6">
         <DashboardStats />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

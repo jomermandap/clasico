@@ -1,36 +1,36 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { DollarSign, Users, ShoppingCart, TrendingUp } from "lucide-react";
+import { Banknote, CalendarRange, ShoppingBag, TrendingDown } from "lucide-react";
 
 export function DashboardStats() {
   const stats = [
     {
-      title: "Total Revenue",
-      value: "$45,231.89",
-      change: "+20.1% from last month",
-      icon: DollarSign,
+      title: "Rent Collected (This Week)",
+      value: "₱45,250",
+      change: "Thu–Sun collections settled",
+      icon: Banknote,
       trend: "up"
     },
     {
-      title: "Active Users",
-      value: "2,350",
-      change: "+180.1% from last month",
-      icon: Users,
+      title: "Pending Rent",
+      value: "₱8,750",
+      change: "Merchants to follow up",
+      icon: TrendingDown,
       trend: "up"
     },
     {
-      title: "Total Orders",
-      value: "1,234",
-      change: "+19% from last month",
-      icon: ShoppingCart,
+      title: "Reserved Spots",
+      value: "38 / 42",
+      change: "Across Thu–Sun sessions",
+      icon: CalendarRange,
       trend: "up"
     },
     {
-      title: "Growth Rate",
-      value: "12.5%",
-      change: "+4% from last month",
-      icon: TrendingUp,
+      title: "Market Expenses",
+      value: "₱12,300",
+      change: "Stall ops, permits, staff",
+      icon: ShoppingBag,
       trend: "up"
     }
   ];
@@ -56,32 +56,32 @@ export function DashboardStats() {
 export function RecentActivity() {
   const activities = [
     {
-      user: "John Doe",
-      action: "created new order",
-      target: "#12345",
-      time: "2 minutes ago",
+      user: "Stall A12",
+      action: "paid rent for",
+      target: "Thu–Sun",
+      time: "5 min ago",
       status: "success"
     },
     {
-      user: "Jane Smith",
-      action: "updated customer",
-      target: "Acme Corp",
-      time: "5 minutes ago",
+      user: "Stall B07",
+      action: "reserved spot for",
+      target: "Sat–Sun",
+      time: "12 min ago",
       status: "info"
     },
     {
-      user: "Bob Johnson",
-      action: "deleted product",
-      target: "Widget A",
-      time: "10 minutes ago",
+      user: "Security & Cleaning",
+      action: "expense logged",
+      target: "₱3,200",
+      time: "30 min ago",
       status: "warning"
     },
     {
-      user: "Alice Brown",
-      action: "completed shipment",
-      target: "#12346",
-      time: "15 minutes ago",
-      status: "success"
+      user: "Stall C03",
+      action: "marked pending rent",
+      target: "Sun",
+      time: "1 hour ago",
+      status: "warning"
     }
   ];
 
@@ -124,40 +124,40 @@ export function RecentActivity() {
 export function ProjectsTable() {
   const projects = [
     {
-      name: "Website Redesign",
-      status: "In Progress",
-      progress: 75,
-      dueDate: "2024-03-15",
-      assignee: "John Doe"
-    },
-    {
-      name: "Mobile App Development",
-      status: "Planning",
-      progress: 25,
-      dueDate: "2024-04-20",
-      assignee: "Jane Smith"
-    },
-    {
-      name: "Database Migration",
-      status: "Completed",
+      name: "Stall A12 – Fresh Produce",
+      status: "Paid",
       progress: 100,
-      dueDate: "2024-02-28",
-      assignee: "Bob Johnson"
+      dueDate: "Thu–Sun",
+      assignee: "Maria D."
     },
     {
-      name: "API Integration",
-      status: "In Progress",
-      progress: 60,
-      dueDate: "2024-03-25",
-      assignee: "Alice Brown"
+      name: "Stall B07 – Coffee Cart",
+      status: "Reserved",
+      progress: 50,
+      dueDate: "Sat–Sun",
+      assignee: "Liam K."
+    },
+    {
+      name: "Stall C03 – Vintage Clothing",
+      status: "Pending Rent",
+      progress: 40,
+      dueDate: "Thu–Sun",
+      assignee: "Ana P."
+    },
+    {
+      name: "Stall D14 – Street Food",
+      status: "Paid",
+      progress: 90,
+      dueDate: "Fri–Sun",
+      assignee: "Jorge R."
     }
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Completed": return "bg-green-100 text-green-800";
-      case "In Progress": return "bg-blue-100 text-blue-800";
-      case "Planning": return "bg-yellow-100 text-yellow-800";
+      case "Paid": return "bg-green-100 text-green-800";
+      case "Reserved": return "bg-blue-100 text-blue-800";
+      case "Pending Rent": return "bg-yellow-100 text-yellow-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -165,8 +165,8 @@ export function ProjectsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Projects</CardTitle>
-        <CardDescription>Track your active projects and their progress</CardDescription>
+        <CardTitle>Merchant Rent & Reservations</CardTitle>
+        <CardDescription>Track stall rent status across the weekend market</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -176,7 +176,7 @@ export function ProjectsTable() {
                 <div>
                   <p className="font-medium">{project.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    Due: {project.dueDate} • Assigned to: {project.assignee}
+                    Days: {project.dueDate} • Contact: {project.assignee}
                   </p>
                 </div>
                 <Badge variant="secondary" className={getStatusColor(project.status)}>
@@ -189,7 +189,9 @@ export function ProjectsTable() {
                   style={{ width: `${project.progress}%` }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">{project.progress}% complete</p>
+              <p className="text-xs text-muted-foreground">
+                {project.progress}% of rent settled for this run
+              </p>
               {index < projects.length - 1 && <Separator />}
             </div>
           ))}
