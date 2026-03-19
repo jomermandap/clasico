@@ -110,3 +110,60 @@ export const PRODUCT_CATEGORIES = [
   "Other",
 ] as const;
 
+export interface MonthlyContract {
+  id: string;
+  merchant_id: string;
+  month_year: string;
+  booth_type: BoothType;
+  booth_number: string;
+  weekends_availed: number;
+  base_rent: number;
+  payment_option?: PaymentOption;
+  security_deposit: number;
+  downpayment_amount: number;
+  balance_amount: number;
+  extra_brand_fee: number;
+  high_wattage_fee: number;
+  space_penalty: number;
+  ingress_egress_penalty: number;
+  other_fees: number;
+  other_fees_note?: string;
+  payment_status: PaymentStatus;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  merchant?: Merchant;
+  attendances?: WeekendAttendance[];
+  payments?: ContractPayment[];
+}
+
+export interface ContractPayment {
+  id: string;
+  contract_id: string;
+  payment_type: 'security_deposit' | 'downpayment' | 'balance' | 'partial' | 'other';
+  amount: number;
+  payment_date: string;
+  reference_note?: string;
+  logged_by?: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface WeekendAttendance {
+  id: string;
+  contract_id: string;
+  weekend_id: string;
+  booth_number?: string;
+  notes?: string;
+  created_at: string;
+  contract?: MonthlyContract;
+  weekend?: Weekend;
+}
+
+export const PAYMENT_TYPES = [
+  { value: 'security_deposit', label: 'Security Deposit' },
+  { value: 'downpayment', label: 'Downpayment' },
+  { value: 'balance', label: 'Balance' },
+  { value: 'partial', label: 'Partial Payment' },
+  { value: 'other', label: 'Other' },
+] as const;

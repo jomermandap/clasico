@@ -69,3 +69,19 @@ export function formatDateRange(startDate: string, endDate: string): string {
   })}`;
 }
 
+export function computeTotalOwed(contract: {
+  base_rent: number; security_deposit: number;
+  extra_brand_fee: number; high_wattage_fee: number;
+  space_penalty: number; ingress_egress_penalty: number; other_fees: number;
+}): number {
+  return contract.base_rent + contract.security_deposit +
+    contract.extra_brand_fee + contract.high_wattage_fee +
+    contract.space_penalty + contract.ingress_egress_penalty + contract.other_fees;
+}
+
+export function computeContractPaymentStatus(totalOwed: number, totalCollected: number): PaymentStatus {
+  if (totalCollected <= 0) return 'unpaid';
+  if (totalCollected >= totalOwed) return 'paid';
+  return 'partial';
+}
+
