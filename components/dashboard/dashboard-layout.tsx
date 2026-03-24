@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, CircleUser, Home, Receipt, Store } from "lucide-react";
@@ -39,7 +39,7 @@ const INSIGHTS_NAV = [
 export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const renderUserMenu = () => (
     <DropdownMenu>
@@ -184,4 +184,3 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
     </div>
   );
 }
-

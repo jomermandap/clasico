@@ -27,7 +27,14 @@ import { Separator } from "@/components/ui/separator";
 type AttendanceWithWeekend = WeekendAttendance & { weekend: Weekend };
 
 type ContractWithJoins = MonthlyContract & {
-  merchant: { name: string; business_name: string };
+  merchant: {
+    id: string;
+    name: string;
+    business_name: string;
+    booth_type: string;
+    booth_number: string;
+    contact_number?: string;
+  };
   payments: ContractPayment[];
   attendances: AttendanceWithWeekend[];
 };
@@ -59,9 +66,10 @@ export default function ContractDetailPage() {
     const { data, error } = await supabase
       .from("monthly_contracts")
       .select(
-        "*, merchant:merchants(*), payments:contract_payments(*), attendances:weekend_attendances(*, weekend:weekends(*))",
+        "*, merchant:merchants(id, name, business_name, booth_type, booth_number, contact_number), payments:contract_payments(*), attendances:weekend_attendances(id, booth_number, weekend:weekends(id, label, date_start, date_end))",
       )
       .eq("id", contractId)
+      .order("payment_date", { ascending: false, foreignTable: "contract_payments" })
       .single();
 
     if (error) {
@@ -71,14 +79,7 @@ export default function ContractDetailPage() {
       return;
     }
 
-    const mapped = data as unknown as ContractWithJoins;
-    mapped.payments = (mapped.payments ?? []).sort((a, b) => {
-      const da = new Date(a.payment_date).getTime();
-      const db = new Date(b.payment_date).getTime();
-      return db - da;
-    });
-
-    setContract(mapped);
+    setContract(data as unknown as ContractWithJoins);
     setLoading(false);
   }, [contractId]);
 
@@ -338,8 +339,30 @@ export default function ContractDetailPage() {
         contract={contract}
         initialData={editingPayment ?? undefined}
         mode={editingPayment ? "edit" : "create"}
-        onSuccess={() => {
-          void fetchContract();
+        onSuccess={(payment) => {
+          setContract((prev) => {
+            if (!prev) return prev;
+
+            const hasExisting = (prev.payments ?? []).some((p) => p.id === payment.id);
+            const nextPayments = hasExisting
+              ? (prev.payments ?? []).map((p) => (p.id === payment.id ? payment : p))
+              : [payment, ...(prev.payments ?? [])];
+
+            const totalCollectedNext = nextPayments.reduce(
+              (sum, p) => sum + (p.amount ?? 0),
+              0,
+            );
+            const totalOwedNext = computeTotalOwed(prev);
+
+            return {
+              ...prev,
+              payments: nextPayments,
+              payment_status: computeContractPaymentStatus(
+                totalOwedNext,
+                totalCollectedNext,
+              ),
+            };
+          });
         }}
       />
 

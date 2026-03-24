@@ -59,10 +59,17 @@ export default function MerchantsPage() {
     const fetchMerchants = async () => {
       setLoading(true);
       const supabase = createClient();
-      const { data, error } = await supabase
+      let query = supabase
         .from("merchants")
-        .select("*")
+        .select(
+          "id, name, business_name, booth_type, booth_number, product_category, contact_number, is_active",
+        )
         .order("business_name", { ascending: true });
+
+      if (tab === "active") query = query.eq("is_active", true);
+      if (tab === "inactive") query = query.eq("is_active", false);
+
+      const { data, error } = await query;
 
       if (error) {
         toast.error("Failed to load merchants.");
@@ -76,7 +83,7 @@ export default function MerchantsPage() {
     };
 
     void fetchMerchants();
-  }, []);
+  }, [tab]);
 
   useEffect(() => {
     router.replace(`/protected/merchants?month=${selectedMonth}`);
@@ -112,23 +119,15 @@ export default function MerchantsPage() {
   }, [selectedMonth, viewTab]);
 
   const filteredMerchants = useMemo(() => {
-    let list = merchants;
-
-    if (tab === "active") {
-      list = list.filter((m) => m.is_active);
-    } else if (tab === "inactive") {
-      list = list.filter((m) => !m.is_active);
-    }
-
-    if (!searchQuery.trim()) return list;
+    if (!searchQuery.trim()) return merchants;
 
     const query = searchQuery.toLowerCase();
-    return list.filter(
+    return merchants.filter(
       (m) =>
         m.business_name.toLowerCase().includes(query) ||
         m.name.toLowerCase().includes(query),
     );
-  }, [merchants, searchQuery, tab]);
+  }, [merchants, searchQuery]);
 
   const handleDelete = (id: string) => {
     setDeletingId(id);
@@ -360,4 +359,3 @@ export default function MerchantsPage() {
     </DashboardLayout>
   );
 }
-

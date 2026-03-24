@@ -5,8 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
+type WeekendCardWeekend = Pick<
+  Weekend,
+  "id" | "label" | "date_start" | "date_end" | "outdoor_booths_available"
+>;
+
 interface WeekendCardProps {
-  weekend: Weekend;
+  weekend: WeekendCardWeekend;
   attendanceCount: number;
   capacity: number;
   onClick: () => void;

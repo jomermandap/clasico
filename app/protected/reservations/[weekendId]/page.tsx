@@ -17,7 +17,13 @@ import { PageHeader } from "@/components/shared/page-header";
 
 type AttendanceWithJoins = WeekendAttendance & {
   contract: MonthlyContract & {
-    merchant: { name: string; business_name: string };
+    merchant: {
+      id: string;
+      name: string;
+      business_name: string;
+      booth_type: string;
+      booth_number: string;
+    };
     payments?: { amount: number }[];
   };
 };
@@ -42,13 +48,48 @@ export default function WeekendDetailPage() {
     return 10 + (weekend.outdoor_booths_available ? 3 : 0);
   }, [weekend]);
 
+  const fetchAll = useCallback(async () => {
+    if (!weekendId) return;
+
+    setLoading(true);
+    const supabase = createClient();
+    const [
+      { data: weekendRow, error: weekendError },
+      { data: attendancesRow, error: attendancesError },
+    ] = await Promise.all([
+      supabase.from("weekends").select("*").eq("id", weekendId).single(),
+      supabase
+        .from("weekend_attendances")
+        .select(
+          "*, contract:monthly_contracts(*, merchant:merchants(id, name, business_name, booth_type, booth_number), payments:contract_payments(amount))",
+        )
+        .eq("weekend_id", weekendId)
+        .order("created_at", { ascending: true }),
+    ]);
+
+    if (weekendError || attendancesError) {
+      toast.error(
+        weekendError ? "Failed to load weekend." : "Failed to load attendances.",
+      );
+      setWeekend(null);
+      setAttendances([]);
+      setLoading(false);
+      return;
+    }
+
+    setWeekend(weekendRow as Weekend);
+    setAttendances((attendancesRow as unknown as AttendanceWithJoins[]) ?? []);
+
+    setLoading(false);
+  }, [weekendId]);
+
   const fetchAttendances = useCallback(async (wId: string) => {
     const supabase = createClient();
 
     const { data, error } = await supabase
       .from("weekend_attendances")
       .select(
-        "*, contract:monthly_contracts(*, merchant:merchants(*), payments:contract_payments(amount))",
+        "*, contract:monthly_contracts(*, merchant:merchants(id, name, business_name, booth_type, booth_number), payments:contract_payments(amount))",
       )
       .eq("weekend_id", wId)
       .order("created_at", { ascending: true });
@@ -61,34 +102,6 @@ export default function WeekendDetailPage() {
 
     setAttendances((data as unknown as AttendanceWithJoins[]) ?? []);
   }, []);
-
-  const fetchAll = useCallback(async () => {
-    if (!weekendId) return;
-
-    setLoading(true);
-    const supabase = createClient();
-
-    const { data: weekendRow, error: weekendError } = await supabase
-      .from("weekends")
-      .select("*")
-      .eq("id", weekendId)
-      .single();
-
-    if (weekendError) {
-      toast.error("Failed to load weekend.");
-      setWeekend(null);
-      setAttendances([]);
-      setLoading(false);
-      return;
-    }
-
-    const w = weekendRow as Weekend;
-    setWeekend(w);
-
-    await fetchAttendances(w.id);
-
-    setLoading(false);
-  }, [fetchAttendances, weekendId]);
 
   useEffect(() => {
     void fetchAll();

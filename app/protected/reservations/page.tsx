@@ -15,6 +15,13 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
+type WeekendWithAttendanceCount = Pick<
+  Weekend,
+  "id" | "label" | "month_year" | "date_start" | "date_end" | "outdoor_booths_available"
+> & {
+  attendances?: { count: number | null }[];
+};
+
 export default function ReservationsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,8 +34,7 @@ export default function ReservationsPage() {
   }, [searchParams]);
 
   const [selectedMonth, setSelectedMonth] = useState<string>(initialMonth);
-  const [weekends, setWeekends] = useState<Weekend[]>([]);
-  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [weekends, setWeekends] = useState<WeekendWithAttendanceCount[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,33 +47,20 @@ export default function ReservationsPage() {
 
     const { data, error } = await supabase
       .from("weekends")
-      .select("*")
+      .select(
+        "id, label, month_year, date_start, date_end, outdoor_booths_available, attendances:weekend_attendances(count)",
+      )
       .eq("month_year", monthYear)
       .order("date_start", { ascending: true });
 
     if (error) {
       setWeekends([]);
-      setCounts({});
       setLoading(false);
       return;
     }
 
-    const list = (data as Weekend[]) ?? [];
+    const list = (data as WeekendWithAttendanceCount[]) ?? [];
     setWeekends(list);
-
-    const nextCounts: Record<string, number> = {};
-
-    await Promise.all(
-      list.map(async (w) => {
-        const { count } = await supabase
-          .from("weekend_attendances")
-          .select("id", { count: "exact", head: true })
-          .eq("weekend_id", w.id);
-        nextCounts[w.id] = count ?? 0;
-      }),
-    );
-
-    setCounts(nextCounts);
     setLoading(false);
   };
 
@@ -111,7 +104,7 @@ export default function ReservationsPage() {
           <div className="space-y-3 mt-4">
             {weekends.map((weekend) => {
               const capacity = 10 + (weekend.outdoor_booths_available ? 3 : 0);
-              const attendanceCount = counts[weekend.id] ?? 0;
+              const attendanceCount = weekend.attendances?.[0]?.count ?? 0;
               return (
                 <WeekendCard
                   key={weekend.id}

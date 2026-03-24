@@ -6,7 +6,6 @@ import type { ContractPayment, MonthlyContract } from "@/lib/types";
 import { PAYMENT_TYPES } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 import {
-  computeContractPaymentStatus,
   computeTotalOwed,
   formatMonthYear,
   formatPHP,
@@ -39,7 +38,7 @@ interface LogPaymentSheetProps {
   contract: MonthlyContract;
   initialData?: ContractPayment;
   mode?: "create" | "edit";
-  onSuccess: () => void;
+  onSuccess: (payment: ContractPayment) => void;
 }
 
 function getTodayIso(): string {
@@ -123,6 +122,7 @@ export function LogPaymentSheet({
     const supabase = createClient();
 
     let paymentError: { message?: string } | null;
+    let savedPayment: ContractPayment | null = null;
     if (mode === "edit" && initialData) {
       // UPDATE existing payment
       const { error } = await supabase
@@ -137,53 +137,36 @@ export function LogPaymentSheet({
         })
         .eq("id", initialData.id);
       paymentError = error;
-    } else {
-      // CREATE new payment
-      const { error } = await supabase.from("contract_payments").insert({
-        contract_id: contract.id,
+      savedPayment = {
+        ...initialData,
         payment_type: paymentType,
         amount: parsed,
         payment_date: paymentDate,
-        reference_note: referenceNote || null,
-        logged_by: loggedBy || null,
-        notes: notes || null,
-      });
+        reference_note: referenceNote || undefined,
+        logged_by: loggedBy || undefined,
+        notes: notes || undefined,
+      };
+    } else {
+      // CREATE new payment
+      const { data, error } = await supabase
+        .from("contract_payments")
+        .insert({
+          contract_id: contract.id,
+          payment_type: paymentType,
+          amount: parsed,
+          payment_date: paymentDate,
+          reference_note: referenceNote || null,
+          logged_by: loggedBy || null,
+          notes: notes || null,
+        })
+        .select("*")
+        .single();
       paymentError = error;
+      savedPayment = (data as ContractPayment | null) ?? null;
     }
 
-    if (paymentError) {
+    if (paymentError || !savedPayment) {
       toast.error(`Failed to ${mode === "edit" ? "update" : "log"} payment.`);
-      setLoading(false);
-      return;
-    }
-
-    // Re-fetch all payments to recompute total
-    const { data: payments, error: paymentsError } = await supabase
-      .from("contract_payments")
-      .select("amount")
-      .eq("contract_id", contract.id);
-
-    if (paymentsError) {
-      toast.error("Failed to refresh payment totals.");
-      setLoading(false);
-      return;
-    }
-
-    const newTotal =
-      (payments as { amount: number }[] | null)?.reduce(
-        (sum, p) => sum + (p.amount ?? 0),
-        0,
-      ) ?? 0;
-
-    const newStatus = computeContractPaymentStatus(totalOwed, newTotal);
-
-    const { error: updateError } = await supabase
-      .from("monthly_contracts")
-      .update({ payment_status: newStatus, updated_at: new Date().toISOString() })
-      .eq("id", contract.id);
-
-    if (updateError) {
-      toast.error("Failed to update contract status.");
       setLoading(false);
       return;
     }
@@ -194,7 +177,7 @@ export function LogPaymentSheet({
         : `Payment of ${formatPHP(parsed)} logged!`,
     );
     setLoading(false);
-    onSuccess();
+    onSuccess(savedPayment);
     onOpenChange(false);
   };
 

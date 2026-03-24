@@ -51,14 +51,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 type ContractWithMeta = MonthlyContract & {
-  merchant: Merchant;
   attendances?: { id: string }[];
-  payments?: { amount: number }[];
 };
 
-type ExistingAttendance = WeekendAttendance & {
-  contract?: { merchant_id: string };
-};
+type ExistingAttendance = Pick<WeekendAttendance, "id" | "contract_id">;
 
 type Draft = {
   weekendsAvailed: number;
@@ -115,13 +111,18 @@ export default function AddMerchantsPage() {
   }, [contracts]);
 
   const attendingMerchantIds = useMemo(() => {
+    const merchantIdByContractId = new Map<string, string>();
+    contracts.forEach((contract) => {
+      merchantIdByContractId.set(contract.id, contract.merchant_id);
+    });
+
     const s = new Set<string>();
     existingAttendances.forEach((a) => {
-      const id = a.contract?.merchant_id;
+      const id = merchantIdByContractId.get(a.contract_id);
       if (id) s.add(id);
     });
     return s;
-  }, [existingAttendances]);
+  }, [contracts, existingAttendances]);
 
   const filteredMerchants = useMemo(() => {
     if (!searchQuery.trim()) return merchants;
@@ -153,11 +154,27 @@ export default function AddMerchantsPage() {
     const w = weekendRow as Weekend;
     setWeekend(w);
 
-    const { data: merchantsRow, error: merchantsError } = await supabase
-      .from("merchants")
-      .select("*")
-      .eq("is_active", true)
-      .order("business_name", { ascending: true });
+    const [
+      { data: merchantsRow, error: merchantsError },
+      { data: contractsRow, error: contractsError },
+      { data: attendancesRow, error: attendancesError },
+    ] = await Promise.all([
+      supabase
+        .from("merchants")
+        .select("id, name, business_name, booth_type, booth_number, is_active")
+        .eq("is_active", true)
+        .order("business_name", { ascending: true }),
+      supabase
+        .from("monthly_contracts")
+        .select(
+          "id, merchant_id, booth_type, booth_number, weekends_availed, base_rent, payment_option, payment_status, attendances:weekend_attendances(id)",
+        )
+        .eq("month_year", w.month_year),
+      supabase
+        .from("weekend_attendances")
+        .select("id, contract_id")
+        .eq("weekend_id", weekendId),
+    ]);
 
     if (merchantsError) {
       toast.error("Failed to load merchants.");
@@ -166,29 +183,12 @@ export default function AddMerchantsPage() {
       return;
     }
 
-    setMerchants((merchantsRow as Merchant[]) ?? []);
-
-    const { data: contractsRow, error: contractsError } = await supabase
-      .from("monthly_contracts")
-      .select(
-        "*, merchant:merchants(*), attendances:weekend_attendances(id), payments:contract_payments(amount)",
-      )
-      .eq("month_year", w.month_year)
-      .order("created_at", { ascending: false });
-
     if (contractsError) {
       toast.error("Failed to load contracts.");
       setContracts([]);
       setLoading(false);
       return;
     }
-
-    setContracts((contractsRow as unknown as ContractWithMeta[]) ?? []);
-
-    const { data: attendancesRow, error: attendancesError } = await supabase
-      .from("weekend_attendances")
-      .select("*, contract:monthly_contracts(merchant_id)")
-      .eq("weekend_id", weekendId);
 
     if (attendancesError) {
       toast.error("Failed to load existing attendances.");
@@ -197,7 +197,10 @@ export default function AddMerchantsPage() {
       return;
     }
 
-    setExistingAttendances((attendancesRow as unknown as ExistingAttendance[]) ?? []);
+    setMerchants((merchantsRow as Merchant[]) ?? []);
+    setContracts((contractsRow as unknown as ContractWithMeta[]) ?? []);
+
+    setExistingAttendances((attendancesRow as ExistingAttendance[]) ?? []);
 
     setLoading(false);
   }, [weekendId]);
@@ -304,18 +307,16 @@ export default function AddMerchantsPage() {
       })),
     ];
 
-    const results = await Promise.all(
-      attendancePayload.map(async (row) => {
-        const { error } = await supabase.from("weekend_attendances").insert(row);
-        return error;
-      }),
-    );
+    if (attendancePayload.length > 0) {
+      const { error: insertError } = await supabase
+        .from("weekend_attendances")
+        .insert(attendancePayload);
 
-    const firstError = results.find(Boolean);
-    if (firstError) {
-      toast.error("Failed to add some merchants. Please try again.");
-      setSaving(false);
-      return;
+      if (insertError) {
+        toast.error("Failed to add some merchants. Please try again.");
+        setSaving(false);
+        return;
+      }
     }
 
     toast.success(`${attendancePayload.length} merchant(s) added to ${weekend.label}`);
