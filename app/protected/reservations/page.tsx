@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 import type { Weekend } from "@/lib/types";
 import { formatMonthYear, getCurrentMonthYear } from "@/lib/utils";
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { PageHeader } from "@/components/shared/page-header";
 import { MonthSelector } from "@/components/shared/month-selector";
 import { MonthSetupForm } from "@/components/reservations/month-setup-form";
 import { WeekendCard } from "@/components/reservations/weekend-card";
@@ -70,9 +69,7 @@ export default function ReservationsPage() {
 
   return (
     <DashboardLayout title="Reservations">
-      <div className="mx-auto w-full max-w-3xl px-2 py-2 pb-24 md:px-4">
-        <PageHeader title="Reservations" />
-
+      <div className="mx-auto w-full max-w-3xl px-2 pb-24 pt-0 md:px-4">
         <div className="sticky top-0 z-10 bg-background pb-2">
           <MonthSelector value={selectedMonth} onChange={setSelectedMonth} />
         </div>

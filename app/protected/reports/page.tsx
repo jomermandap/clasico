@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Printer } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { MonthSelector } from "@/components/shared/month-selector";
-import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -113,10 +112,9 @@ export default function ReportsPage() {
   );
 
   return (
-    <DashboardLayout title="Report">
-      <div className="mx-auto w-full max-w-5xl px-2 py-2 pb-24 md:px-4">
+    <DashboardLayout title="Audit Report">
+      <div className="mx-auto w-full max-w-5xl px-2 pb-24 pt-0 md:px-4">
         <div className="no-print">
-          <PageHeader title="Audit Report" />
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="w-full max-w-sm">
               <MonthSelector value={selectedMonth} onChange={setSelectedMonth} />

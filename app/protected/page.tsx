@@ -6,7 +6,6 @@ import { DashboardLayout } from "@/components/dashboard-layout";
 import { OverviewStats } from "@/components/dashboard/overview-stats";
 import { ThisWeekendPreview } from "@/components/dashboard/this-weekend-preview";
 import { MonthSelector } from "@/components/shared/month-selector";
-import { PageHeader } from "@/components/shared/page-header";
 import { formatMonthYear, getCurrentMonthYear } from "@/lib/utils";
 
 export default function ProtectedPage() {
@@ -28,11 +27,10 @@ export default function ProtectedPage() {
 
   return (
     <DashboardLayout title="Overview">
-      <div className="mx-auto w-full max-w-3xl px-2 py-2 pb-24 md:px-4">
-        <PageHeader
-          title="Overview"
-          description={formatMonthYear(selectedMonth)}
-        />
+      <div className="mx-auto w-full max-w-3xl px-2 pb-24 pt-0 md:px-4">
+        <p className="mb-3 text-sm text-muted-foreground">
+          {formatMonthYear(selectedMonth)}
+        </p>
 
         <div className="sticky top-0 z-10 mb-4 bg-background pb-2">
           <MonthSelector value={selectedMonth} onChange={setSelectedMonth} />

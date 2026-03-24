@@ -13,7 +13,6 @@ import { CurrencyDisplay } from "@/components/shared/currency-display";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FabButton } from "@/components/shared/fab-button";
 import { MonthSelector } from "@/components/shared/month-selector";
-import { PageHeader } from "@/components/shared/page-header";
 import {
   Sheet,
   SheetContent,
@@ -195,9 +194,7 @@ export default function ExpensesPage() {
 
   return (
     <DashboardLayout title="Expenses">
-      <div className="mx-auto w-full max-w-3xl px-2 py-2 pb-24 md:px-4">
-        <PageHeader title="Expenses" />
-
+      <div className="mx-auto w-full max-w-3xl px-2 pb-24 pt-0 md:px-4">
         <div className="sticky top-0 z-10 bg-background pb-2">
           <MonthSelector value={selectedMonth} onChange={setSelectedMonth} />
         </div>
